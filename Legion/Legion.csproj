@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A3AB69B4-59B4-403D-BC51-F8DBAD818F08}</ProjectGuid>
+    <ProjectGuid>{CCB29155-CE7F-4774-8A57-87308E3A0962}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Legion</RootNamespace>
     <AssemblyName>Legion</AssemblyName>
@@ -30,8 +30,14 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MyClass.cs" />
+    <Compile Include="Channel.cs" />
+    <Compile Include="Factory.cs" />
+    <Compile Include="IEvent.cs" />
+    <Compile Include="IObject.cs" />
+    <Compile Include="Manager.cs" />
+    <Compile Include="ObjectBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utilities\MultiDictionary.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
