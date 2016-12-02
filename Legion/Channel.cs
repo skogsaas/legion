@@ -23,7 +23,7 @@ namespace Legion
         public delegate void ObjectHandler(Channel channel, IObject obj);
         public delegate void EventHandler(Channel channel, IEvent evt);
 
-        public Channel(string name)
+        internal Channel(string name)
         {
             this.objects = new Dictionary<string, IObject>();
             this.objectPublish = new Utilities.MultiDictionary<Type, ObjectHandler>();
@@ -31,6 +31,30 @@ namespace Legion
             this.eventPublish = new Utilities.MultiDictionary<Type, EventHandler>();
 
             this.Name = name;
+        }
+
+        public void RegisterType(Type type)
+        {
+            Factory.RegisterType(type);
+        }
+
+        public T CreateType<T>() where T : class
+        {
+            Type type = typeof(T);
+            Type generated = Factory.FindType(type);
+
+            T value = (T)Activator.CreateInstance(generated);
+
+            return value;
+        }
+
+        public IObject CreateType(string type)
+        {
+            Type generated = Factory.FindType(type);
+
+            IObject value = (IObject)Activator.CreateInstance(generated);
+
+            return value;
         }
 
         public IObject Find(string id)

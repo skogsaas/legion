@@ -1,17 +1,37 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Reflection;
 
 namespace Legion
 {
-    public class ObjectBase : IObject, INotifyPropertyChanged
+    public class ObjectBase : StructBase, IObject
     {
-        public string Id { get; private set; }
+        private string id;
+        private bool published;
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void NotifyPropertyChanged(string property)
+        public string Id
         {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+            get { return this.id; }
+            set {
+                if (!this.published)
+                {
+                    this.id = value;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Cannot set the Id of an object after it's published.");
+                }
+            }
+        }
+
+        public ObjectBase()
+        {
+            this.id = Factory.GenerateId(); // Get a default id until it's set manually
+        }
+
+        public ObjectBase(string id)
+        {
+            this.id = id;
         }
     }
 }

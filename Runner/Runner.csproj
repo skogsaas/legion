@@ -1,12 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CCB29155-CE7F-4774-8A57-87308E3A0962}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>Legion</RootNamespace>
-    <AssemblyName>Legion</AssemblyName>
+    <ProjectGuid>{04C8CC06-BC61-4B13-B65B-DAB4774E53D9}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Runner</RootNamespace>
+    <AssemblyName>Runner</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -17,29 +17,29 @@
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+    <ExternalConsole>true</ExternalConsole>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+    <ExternalConsole>true</ExternalConsole>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Channel.cs" />
-    <Compile Include="Factory.cs" />
-    <Compile Include="IEvent.cs" />
-    <Compile Include="IObject.cs" />
-    <Compile Include="IStruct.cs" />
-    <Compile Include="Manager.cs" />
-    <Compile Include="StructBase.cs" />
-    <Compile Include="ObjectBase.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utilities\MultiDictionary.cs" />
+    <Compile Include="TestObject.cs" />
+    <Compile Include="TestStruct.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Legion\Legion.csproj">
+      <Project>{CCB29155-CE7F-4774-8A57-87308E3A0962}</Project>
+      <Name>Legion</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,38 +1,94 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Legion
 {
-    public class Factory
+    internal class Factory
     {
+        #region Singelton
+
+        static Factory instance;
+        private static Factory Instance
+        {
+            get
+            {
+                if (Factory.instance == null)
+                {
+                    Factory.instance = new Factory();
+                }
+
+                return Factory.instance;
+            }
+        }
+
+        #endregion
+
+        public static void RegisterType(Type type)
+        {
+            Factory.Instance.registerType(type);
+        }
+
+        public static Type FindType(Type type)
+        {
+            return Factory.Instance.findType(type);
+        }
+
+        public static Type FindType(string fullname)
+        {
+            return Factory.Instance.findType(fullname);
+        }
+
+        public static string GenerateId()
+        {
+            return Factory.Instance.generateId();
+        }
+
+        #region Implementation
+
         private Dictionary<Type /* Interface */, Type /* Generated */> types;
 
-        public Factory()
+        private Factory()
         {
             this.types = new Dictionary<Type, Type>();
         }
 
-        public T create<T>() where T : class
+        private void registerType(Type type)
         {
-            Type type = typeof(T);
-            Type generated = null;
-
-            if(this.types.ContainsKey(type))
+            if (!this.types.ContainsKey(type))
             {
-                generated = this.types[type];
+                this.types[type] = generateType(type);
             }
-            else
-            {
-                generated = this.types[type] = generateType(type);
-            }
-
-            return (T)Activator.CreateInstance(generated);
         }
+
+        private Type findType(Type type)
+        {
+            RegisterType(type);
+
+            return this.types[type];
+        }
+
+        private Type findType(string fullname)
+        {
+            foreach (KeyValuePair<Type, Type> pair in this.types)
+            {
+                if (pair.Key.FullName == fullname)
+                {
+                    return pair.Value;
+                }
+            }
+
+            return null;
+        }
+
+        private string generateId()
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+        #region Class generation
 
         private Type generateType(Type type)
         {
@@ -40,10 +96,25 @@ namespace Legion
             AssemblyBuilder assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
             ModuleBuilder moduleBuilder = assemblyBuilder.DefineDynamicModule(assemblyName.Name, true);
 
+			Type parent = null;
+
+			if (typeof(IObject).IsAssignableFrom(type))
+			{
+				parent = typeof(ObjectBase);
+			}
+			else if (typeof(IStruct).IsAssignableFrom(type))
+			{
+				parent = typeof(StructBase);
+			}
+			else 
+			{
+				throw new NotSupportedException();
+			}
+
             TypeBuilder typeBuilder = moduleBuilder.DefineType(
                 type.Name, // Name of class
                 TypeAttributes.Public | TypeAttributes.BeforeFieldInit | TypeAttributes.Sealed, // Attributes
-                typeof(ObjectBase), // Parent
+                parent, // Parent
                 new Type[] { type } // Interfaces
                 );
 
@@ -107,11 +178,33 @@ namespace Legion
             ilSetGenerator.Emit(OpCodes.Ldarg_0); // "this"
             ilSetGenerator.Emit(OpCodes.Ldarg_1);
             ilSetGenerator.Emit(OpCodes.Stfld, fieldBuilder);
-            ilSetGenerator.Emit(OpCodes.Nop);
+
             // Now call the NotifyPropertyChanged-function in the base class.
             ilSetGenerator.Emit(OpCodes.Ldarg_0); // "this"
             ilSetGenerator.Emit(OpCodes.Ldstr, property.Name);
-            ilSetGenerator.Emit(OpCodes.Callvirt, typeof(ObjectBase).GetMethod("NotifyPropertyChanged", BindingFlags.Instance | BindingFlags.NonPublic));
+            ilSetGenerator.EmitCall(
+                OpCodes.Call, 
+                typeof(StructBase).GetMethod("NotifyPropertyChanged", BindingFlags.Instance | BindingFlags.NonPublic), 
+                new Type[] { typeof(string) }
+                );
+            ilSetGenerator.Emit(OpCodes.Nop);
+
+            // If this property is a object inheriting from INotifyPropertyChanged,
+            // Subscribe to changes downwards.
+            if(typeof(INotifyPropertyChanged).IsAssignableFrom(property.PropertyType))
+            {
+                ilSetGenerator.Emit(OpCodes.Ldarg_0);
+                ilSetGenerator.Emit(OpCodes.Ldarg_0);
+                ilSetGenerator.Emit(OpCodes.Ldfld, fieldBuilder);
+                ilSetGenerator.Emit(OpCodes.Ldstr, property.Name);
+                ilSetGenerator.EmitCall(
+                    OpCodes.Call,
+                    typeof(StructBase).GetMethod("ListenSubstructureChanged", BindingFlags.Instance | BindingFlags.NonPublic),
+                    new Type[] { typeof(INotifyPropertyChanged), typeof(string) }
+                    );
+                ilSetGenerator.Emit(OpCodes.Nop);
+            }
+
             ilSetGenerator.Emit(OpCodes.Ret);
 
             typeBuilder.DefineMethodOverride(methodSetBuilder, property.SetMethod);
@@ -119,5 +212,9 @@ namespace Legion
             propertyBuilder.SetGetMethod(methodGetBuilder);
             propertyBuilder.SetSetMethod(methodSetBuilder);
         }
+
+        #endregion
+
+        #endregion
     }
 }

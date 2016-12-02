@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace LegionTest
 {
-    public interface IPropertyInterface : Legion.IObject
+    public interface TestStruct : Legion.IStruct
     {
-        int Dummy { get; set; }
+        string Dummy1 { get; set; }
     }
 }
