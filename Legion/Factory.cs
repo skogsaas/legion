@@ -4,58 +4,18 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Legion
+namespace Skogsaas.Legion
 {
     internal class Factory
     {
-        #region Singelton
-
-        static Factory instance;
-        private static Factory Instance
-        {
-            get
-            {
-                if (Factory.instance == null)
-                {
-                    Factory.instance = new Factory();
-                }
-
-                return Factory.instance;
-            }
-        }
-
-        #endregion
-
-        public static void RegisterType(Type type)
-        {
-            Factory.Instance.registerType(type);
-        }
-
-        public static Type FindType(Type type)
-        {
-            return Factory.Instance.findType(type);
-        }
-
-        public static Type FindType(string fullname)
-        {
-            return Factory.Instance.findType(fullname);
-        }
-
-        public static string GenerateId()
-        {
-            return Factory.Instance.generateId();
-        }
-
-        #region Implementation
-
         private Dictionary<Type /* Interface */, Type /* Generated */> types;
 
-        private Factory()
+        public Factory()
         {
             this.types = new Dictionary<Type, Type>();
         }
 
-        private void registerType(Type type)
+        public void RegisterType(Type type)
         {
             if (!this.types.ContainsKey(type))
             {
@@ -63,14 +23,17 @@ namespace Legion
             }
         }
 
-        private Type findType(Type type)
+        public Type FindType(Type type)
         {
-            RegisterType(type);
+            if(this.types.ContainsKey(type))
+            {
+                return this.types[type];
+            }
 
-            return this.types[type];
+            return null;
         }
 
-        private Type findType(string fullname)
+        public Type FindType(string fullname)
         {
             foreach (KeyValuePair<Type, Type> pair in this.types)
             {
@@ -83,11 +46,6 @@ namespace Legion
             return null;
         }
 
-        private string generateId()
-        {
-            return Guid.NewGuid().ToString();
-        }
-
         #region Class generation
 
         private Type generateType(Type type)
@@ -96,24 +54,41 @@ namespace Legion
             AssemblyBuilder assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
             ModuleBuilder moduleBuilder = assemblyBuilder.DefineDynamicModule(assemblyName.Name, true);
 
-			Type parent = null;
+            Type parent = null;
+            Type baseType = null;
 
 			if (typeof(IObject).IsAssignableFrom(type))
 			{
-				parent = typeof(ObjectBase);
-			}
+                parent = typeof(ObjectBase);
+                baseType = typeof(IObject);
+            }
 			else if (typeof(IStruct).IsAssignableFrom(type))
 			{
-				parent = typeof(StructBase);
-			}
-			else 
+                parent = typeof(StructBase);
+                baseType = typeof(IStruct);
+            }
+            else if (typeof(IEvent).IsAssignableFrom(type))
+            {
+                parent = typeof(EventBase);
+                baseType = typeof(IEvent);
+            }
+            else 
 			{
 				throw new NotSupportedException();
 			}
 
+            // Get the first interface this type implements
+            Type[] interfaces = type.GetInterfaces();
+
+            if(interfaces.Length > 0 && interfaces[0] != baseType)
+            {
+                RegisterType(interfaces[0]); // Makes sure the type is registered.
+                parent = FindType(interfaces[0]);
+            }
+
             TypeBuilder typeBuilder = moduleBuilder.DefineType(
                 type.Name, // Name of class
-                TypeAttributes.Public | TypeAttributes.BeforeFieldInit | TypeAttributes.Sealed, // Attributes
+                TypeAttributes.Public | TypeAttributes.BeforeFieldInit, // Attributes
                 parent, // Parent
                 new Type[] { type } // Interfaces
                 );
@@ -212,8 +187,6 @@ namespace Legion
             propertyBuilder.SetGetMethod(methodGetBuilder);
             propertyBuilder.SetSetMethod(methodSetBuilder);
         }
-
-        #endregion
 
         #endregion
     }

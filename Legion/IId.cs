@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Skogsaas.Legion
 {
-    public interface IEvent : IId
+    public interface IId
     {
+        string Id { get; }
     }
 }

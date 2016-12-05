@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Skogsaas.Legion
+namespace LegionTest
 {
-    public interface IEvent : IId
+    public interface ParentObject : TestObject
     {
+        string Alias { get; set; }
     }
 }

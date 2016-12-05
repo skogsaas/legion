@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Skogsaas.Legion;
 
 namespace LegionTest
 {
-    public interface TestStruct : Legion.IStruct
+    public interface TestStruct : IStruct
     {
         string Dummy1 { get; set; }
     }

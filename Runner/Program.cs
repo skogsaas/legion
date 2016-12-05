@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
-using Legion;
+using Skogsaas.Legion;
 
 namespace Runner
 {
@@ -8,8 +8,7 @@ namespace Runner
 	{
 		public static void Main(string[] args)
 		{
-			Manager manager = new Legion.Manager();
-			Channel channel = manager.Create("TEST");
+			Channel channel = Manager.Create("TEST");
 
 			int events = 0;
 

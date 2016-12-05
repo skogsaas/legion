@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel;
 
-namespace Legion
+namespace Skogsaas.Legion
 {
-    public interface IObject : INotifyPropertyChanged
+    public interface IObject : IId, INotifyPropertyChanged
     {
-        string Id { get; }
     }
 }

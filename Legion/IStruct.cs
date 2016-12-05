@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Legion
+namespace Skogsaas.Legion
 {
     public interface IStruct : INotifyPropertyChanged
     {

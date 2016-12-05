@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Legion.Utilities
+namespace Skogsaas.Legion.Utilities
 {
     internal class MultiDictionary<Key, Value> : IEnumerable<KeyValuePair<Key, Value>>
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace Legion
+namespace Skogsaas.Legion
 {
     public class StructBase : IStruct
     {

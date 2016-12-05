@@ -1,17 +1,39 @@
 ﻿using System.Collections.Generic;
 
-namespace Legion
+namespace Skogsaas.Legion
 {
 	public class Manager
 	{
         private Dictionary<string, Channel> channels;
 
-		public Manager()
+        private static Manager instance = null;
+
+        private static Manager Instance
+        {
+            get
+            {
+                if(Manager.instance == null)
+                {
+                    Manager.instance = new Manager();
+                }
+
+                return Manager.instance;
+            }
+        }
+
+        public static Channel Create(string name)
+        {
+            return Manager.Instance.create(name);
+        }
+
+        #region Implementation
+
+        private Manager()
 		{
             this.channels = new Dictionary<string, Channel>();
 		}
 
-        public Channel Create(string name)
+        private Channel create(string name)
         {
             if(!this.channels.ContainsKey(name))
             {
@@ -20,5 +42,7 @@ namespace Legion
 
             return this.channels[name];
         }
-	}
+
+        #endregion
+    }
 }

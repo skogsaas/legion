@@ -5,8 +5,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{CCB29155-CE7F-4774-8A57-87308E3A0962}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Legion</RootNamespace>
-    <AssemblyName>Legion</AssemblyName>
+    <RootNamespace>Skogsaas.Legion</RootNamespace>
+    <AssemblyName>Skogsaas.Legion</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -31,8 +31,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Channel.cs" />
+    <Compile Include="EventBase.cs" />
     <Compile Include="Factory.cs" />
     <Compile Include="IEvent.cs" />
+    <Compile Include="IId.cs" />
     <Compile Include="IObject.cs" />
     <Compile Include="IStruct.cs" />
     <Compile Include="Manager.cs" />

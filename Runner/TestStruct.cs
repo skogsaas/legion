@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Skogsaas.Legion;
+
 namespace Runner
 {
-	public interface TestStruct : Legion.IStruct
+	public interface TestStruct : IStruct
 	{
 		int Dummy1 { get; set; }
 	}

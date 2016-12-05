@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Legion
+namespace Skogsaas.Legion
 {
     public class Channel
     {
@@ -20,11 +17,14 @@ namespace Legion
 
         public string Name { get; private set; }
 
+        internal Factory Factory { get; private set; }
+
         public delegate void ObjectHandler(Channel channel, IObject obj);
         public delegate void EventHandler(Channel channel, IEvent evt);
 
         internal Channel(string name)
         {
+            this.Factory = new Factory();
             this.objects = new Dictionary<string, IObject>();
             this.objectPublish = new Utilities.MultiDictionary<Type, ObjectHandler>();
             this.objectUnpublish = new Utilities.MultiDictionary<Type, ObjectHandler>();
@@ -35,26 +35,51 @@ namespace Legion
 
         public void RegisterType(Type type)
         {
-            Factory.RegisterType(type);
+            this.Factory.RegisterType(type);
         }
 
-        public T CreateType<T>() where T : class
+        public Type FindType(Type type)
+        {
+            return this.Factory.FindType(type);
+        }
+
+        public Type FindType(string fullname)
+        {
+            return this.Factory.FindType(fullname);
+        }
+
+        public T CreateType<T>(string id = null) where T : class
         {
             Type type = typeof(T);
-            Type generated = Factory.FindType(type);
+            this.Factory.RegisterType(type);
 
-            T value = (T)Activator.CreateInstance(generated);
+            Type generated = this.Factory.FindType(type);
 
-            return value;
+            return (T)activateIdType(generated, id);
         }
 
-        public IObject CreateType(string type)
+        public object CreateType(string type, string id = null)
         {
-            Type generated = Factory.FindType(type);
+            Type generated = this.Factory.FindType(type);
 
-            IObject value = (IObject)Activator.CreateInstance(generated);
+            if(generated != null)
+            {
+                return (IId)activateIdType(generated, id);
+            }
 
-            return value;
+            return null;
+        }
+
+        private object activateIdType(Type type, string id = null)
+        {
+            if (id != null && id.Length > 0)
+            {
+                return Activator.CreateInstance(type, new object[] { id });
+            }
+            else
+            {
+                return Activator.CreateInstance(type);
+            }
         }
 
         public IObject Find(string id)

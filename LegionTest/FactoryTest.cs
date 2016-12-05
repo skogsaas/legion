@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Skogsaas.Legion;
 using System.ComponentModel;
 
 namespace LegionTest
@@ -7,14 +7,12 @@ namespace LegionTest
     [TestClass]
     public class FactoryTest
     {
-        public static Legion.Manager manager;
-        public static Legion.Channel channel;
+        public static Channel channel;
 
         [ClassInitialize]
         public static void ClassInit(TestContext context)
         {
-            FactoryTest.manager = new Legion.Manager();
-            FactoryTest.channel = FactoryTest.manager.Create("TEST");
+            FactoryTest.channel = Manager.Create("TEST");
         }
 
         [TestMethod]
@@ -41,6 +39,15 @@ namespace LegionTest
             i.Dummy2.Dummy1 = "Hello World!";
             Assert.AreEqual(1, sEvents);
             Assert.AreEqual(3, oEvents);
+        }
+
+        [TestMethod]
+        public void TestParent()
+        {
+            ParentObject i = FactoryTest.channel.CreateType<ParentObject>();
+
+            i.Alias = "Hello World!";
+            Assert.AreEqual("Hello World!", i.Alias);
         }
     }
 }

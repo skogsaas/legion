@@ -1,17 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Skogsaas.Legion
 {
-    public class ObjectBase : StructBase, IObject
+    public class EventBase : IEvent
     {
         public string Id { get; private set; }
 
-        public ObjectBase()
+        public EventBase()
         {
             this.Id = Guid.NewGuid().ToString();
         }
 
-        public ObjectBase(string id)
+        public EventBase(string id)
         {
             this.Id = id;
         }
