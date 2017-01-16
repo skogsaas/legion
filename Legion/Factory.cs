@@ -10,6 +10,10 @@ namespace Skogsaas.Legion
     {
         private Dictionary<Type /* Interface */, Type /* Generated */> types;
 
+        public delegate void TypeRegisteredHandler(Type type, Type generated);
+
+        public event TypeRegisteredHandler OnTypeRegistered;
+
         public Factory()
         {
             this.types = new Dictionary<Type, Type>();
@@ -19,7 +23,7 @@ namespace Skogsaas.Legion
         {
             if (!this.types.ContainsKey(type))
             {
-                this.types[type] = generateType(type);
+                registerType(type, generateType(type));
             }
         }
 
@@ -44,6 +48,16 @@ namespace Skogsaas.Legion
             }
 
             return null;
+        }
+
+        private void registerType(Type type, Type generated)
+        {
+            if (!this.types.ContainsKey(type))
+            {
+                this.types[type] = generated;
+
+                this.OnTypeRegistered?.Invoke(type, generated);
+            }
         }
 
         #region Class generation
@@ -82,7 +96,7 @@ namespace Skogsaas.Legion
 
             if(interfaces.Length > 0 && interfaces[0] != baseType)
             {
-                RegisterType(interfaces[0]); // Makes sure the type is registered.
+                RegisterType(interfaces[0]); // Makes sure the type is registered if it's not already.
                 parent = FindType(interfaces[0]);
             }
 
@@ -93,17 +107,57 @@ namespace Skogsaas.Legion
                 new Type[] { type } // Interfaces
                 );
 
+            generateConstructorNoParam(parent, typeBuilder);
+
+            if(baseType != typeof(IStruct))
+            {
+                generateConstructorIdParam(parent, typeBuilder);
+            }
+
             PropertyInfo[] properties = type.GetProperties();
 
             foreach (PropertyInfo property in properties)
             {
-                generateProperty(property, typeBuilder);
+                generateProperty(property, typeBuilder, baseType);
             }
 
             return typeBuilder.CreateType();
         }
 
-        private void generateProperty(PropertyInfo property, TypeBuilder typeBuilder)
+        private void generateConstructorNoParam(Type parent, TypeBuilder typeBuilder)
+        {
+            ConstructorInfo baseConstructor = parent.GetConstructor(new Type[] { });
+            ConstructorBuilder constructorBuilder = typeBuilder.DefineConstructor(
+                MethodAttributes.Public,
+                CallingConventions.Standard,
+                null
+                );
+
+            // Generate code to call base constructor passing string
+            ILGenerator ctorIL = constructorBuilder.GetILGenerator();
+            ctorIL.Emit(OpCodes.Ldarg_0);
+            ctorIL.Emit(OpCodes.Call, baseConstructor);
+            ctorIL.Emit(OpCodes.Ret);
+        }
+
+        private void generateConstructorIdParam(Type parent, TypeBuilder typeBuilder)
+        {
+            ConstructorInfo baseConstructor = parent.GetConstructor(new Type[] { typeof(string) });
+            ConstructorBuilder constructorBuilder = typeBuilder.DefineConstructor(
+                MethodAttributes.Public,
+                CallingConventions.Standard,
+                new Type[] { typeof(string) }
+                );
+
+            // Generate code to call base constructor passing string
+            ILGenerator ctorIL = constructorBuilder.GetILGenerator();
+            ctorIL.Emit(OpCodes.Ldarg_0);
+            ctorIL.Emit(OpCodes.Ldarg_1);
+            ctorIL.Emit(OpCodes.Call, baseConstructor);
+            ctorIL.Emit(OpCodes.Ret);
+        }
+
+        private void generateProperty(PropertyInfo property, TypeBuilder typeBuilder, Type baseType)
         {
             FieldBuilder fieldBuilder = typeBuilder.DefineField(
                     "_" + property.Name,
@@ -154,30 +208,33 @@ namespace Skogsaas.Legion
             ilSetGenerator.Emit(OpCodes.Ldarg_1);
             ilSetGenerator.Emit(OpCodes.Stfld, fieldBuilder);
 
-            // Now call the NotifyPropertyChanged-function in the base class.
-            ilSetGenerator.Emit(OpCodes.Ldarg_0); // "this"
-            ilSetGenerator.Emit(OpCodes.Ldstr, property.Name);
-            ilSetGenerator.EmitCall(
-                OpCodes.Call, 
-                typeof(StructBase).GetMethod("NotifyPropertyChanged", BindingFlags.Instance | BindingFlags.NonPublic), 
-                new Type[] { typeof(string) }
-                );
-            ilSetGenerator.Emit(OpCodes.Nop);
-
-            // If this property is a object inheriting from INotifyPropertyChanged,
-            // Subscribe to changes downwards.
-            if(typeof(INotifyPropertyChanged).IsAssignableFrom(property.PropertyType))
+            if(baseType == typeof(IStruct) || baseType == typeof(IObject))
             {
-                ilSetGenerator.Emit(OpCodes.Ldarg_0);
-                ilSetGenerator.Emit(OpCodes.Ldarg_0);
-                ilSetGenerator.Emit(OpCodes.Ldfld, fieldBuilder);
+                // Now call the NotifyPropertyChanged-function in the base class.
+                ilSetGenerator.Emit(OpCodes.Ldarg_0); // "this"
                 ilSetGenerator.Emit(OpCodes.Ldstr, property.Name);
                 ilSetGenerator.EmitCall(
                     OpCodes.Call,
-                    typeof(StructBase).GetMethod("ListenSubstructureChanged", BindingFlags.Instance | BindingFlags.NonPublic),
-                    new Type[] { typeof(INotifyPropertyChanged), typeof(string) }
+                    typeof(StructBase).GetMethod("NotifyPropertyChanged", BindingFlags.Instance | BindingFlags.NonPublic),
+                    new Type[] { typeof(string) }
                     );
                 ilSetGenerator.Emit(OpCodes.Nop);
+
+                // If this property is a object inheriting from INotifyPropertyChanged,
+                // Subscribe to changes downwards.
+                if (typeof(INotifyPropertyChanged).IsAssignableFrom(property.PropertyType))
+                {
+                    ilSetGenerator.Emit(OpCodes.Ldarg_0);
+                    ilSetGenerator.Emit(OpCodes.Ldarg_0);
+                    ilSetGenerator.Emit(OpCodes.Ldfld, fieldBuilder);
+                    ilSetGenerator.Emit(OpCodes.Ldstr, property.Name);
+                    ilSetGenerator.EmitCall(
+                        OpCodes.Call,
+                        typeof(StructBase).GetMethod("ListenSubstructureChanged", BindingFlags.Instance | BindingFlags.NonPublic),
+                        new Type[] { typeof(INotifyPropertyChanged), typeof(string) }
+                        );
+                    ilSetGenerator.Emit(OpCodes.Nop);
+                }
             }
 
             ilSetGenerator.Emit(OpCodes.Ret);

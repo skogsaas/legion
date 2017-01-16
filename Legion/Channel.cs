@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Skogsaas.Legion
 {
-    public class Channel
+    public class Channel : IEnumerable<IObject>
     {
         private Dictionary<string, IObject> objects;
 
@@ -11,6 +12,8 @@ namespace Skogsaas.Legion
 
         private Utilities.MultiDictionary<Type, ObjectHandler> objectPublish;
         private Utilities.MultiDictionary<Type, ObjectHandler> objectUnpublish;
+        private Utilities.MultiDictionary<string, ObjectHandler> objectPublishId;
+        private Utilities.MultiDictionary<string, ObjectHandler> objectUnpublishId;
         private Utilities.MultiDictionary<Type, EventHandler> eventPublish;
 
         #endregion
@@ -19,15 +22,24 @@ namespace Skogsaas.Legion
 
         internal Factory Factory { get; private set; }
 
+        public delegate void TypeRegisteredHandler(Type type, Type generated);
+        public event TypeRegisteredHandler OnTypeRegistered;
+
         public delegate void ObjectHandler(Channel channel, IObject obj);
         public delegate void EventHandler(Channel channel, IEvent evt);
 
         internal Channel(string name)
         {
             this.Factory = new Factory();
+
+            // Forward events from factory.
+            this.Factory.OnTypeRegistered += (Type type, Type generated) => { this.OnTypeRegistered?.Invoke(type, generated); };
+
             this.objects = new Dictionary<string, IObject>();
             this.objectPublish = new Utilities.MultiDictionary<Type, ObjectHandler>();
             this.objectUnpublish = new Utilities.MultiDictionary<Type, ObjectHandler>();
+            this.objectPublishId = new Utilities.MultiDictionary<string, ObjectHandler>();
+            this.objectUnpublishId = new Utilities.MultiDictionary<string, ObjectHandler>();
             this.eventPublish = new Utilities.MultiDictionary<Type, EventHandler>();
 
             this.Name = name;
@@ -109,8 +121,25 @@ namespace Skogsaas.Legion
             return objects;
         }
 
+        public List<IObject> FindOfType(Type type)
+        {
+            List<IObject> objects = new List<IObject>();
+
+            foreach (KeyValuePair<string, IObject> pair in this.objects)
+            {
+                if (type.IsAssignableFrom(pair.Value.GetType()))
+                {
+                    objects.Add(pair.Value);
+                }
+            }
+
+            return objects;
+        }
+
         public void Publish(IObject obj)
         {
+            (obj as ObjectBase).SetPublished(true);
+
             this.objects[obj.Id] = obj;
             triggerObjectPublished(obj);
         }
@@ -119,6 +148,8 @@ namespace Skogsaas.Legion
         {
             if (this.objects.ContainsKey(obj.Id))
             {
+                (obj as ObjectBase).SetPublished(true);
+
                 this.objects.Remove(obj.Id);
                 triggerObjectUnpublished(obj);
             }
@@ -152,6 +183,24 @@ namespace Skogsaas.Legion
             this.objectUnpublish.Add(type, handler);
         }
 
+        public void SubscribePublishId(string id, ObjectHandler handler)
+        {
+            this.objectPublishId.Add(id, handler);
+
+            foreach (KeyValuePair<string, IObject> pair in this.objects)
+            {
+                if (pair.Key == id)
+                {
+                    handler.Invoke(this, pair.Value);
+                }
+            }
+        }
+
+        public void SubscribeUnpublishId(string id, ObjectHandler handler)
+        {
+            this.objectPublishId.Add(id, handler);
+        }
+
         public void UnsubscribePublish(Type type, ObjectHandler handler)
         {
             this.objectPublish.Remove(type, handler);
@@ -167,10 +216,28 @@ namespace Skogsaas.Legion
             this.objectUnpublish.Remove(type, handler);
         }
 
+        public void UnsubscribePublishId(string id, ObjectHandler handler)
+        {
+            this.objectPublishId.Remove(id, handler);
+        }
+
+        public void UnsubscribeUnpublishId(string id, ObjectHandler handler)
+        {
+            this.objectPublishId.Remove(id, handler);
+        }
+
         #region Private triggers
 
         private void triggerObjectPublished(IObject obj)
         {
+            if(this.objectPublishId.ContainsKey(obj.Id))
+            {
+                foreach(ObjectHandler handler in this.objectPublishId[obj.Id])
+                {
+                    handler.Invoke(this, obj);
+                }
+            }
+
             foreach (KeyValuePair<Type, ObjectHandler> pair in this.objectPublish)
             {
                 if (pair.Key.IsAssignableFrom(obj.GetType()))
@@ -182,6 +249,14 @@ namespace Skogsaas.Legion
 
         private void triggerObjectUnpublished(IObject obj)
         {
+            if (this.objectUnpublishId.ContainsKey(obj.Id))
+            {
+                foreach (ObjectHandler handler in this.objectUnpublishId[obj.Id])
+                {
+                    handler.Invoke(this, obj);
+                }
+            }
+
             foreach (KeyValuePair<Type, ObjectHandler> pair in this.objectUnpublish)
             {
                 if (pair.Key.IsAssignableFrom(obj.GetType()))
@@ -200,6 +275,20 @@ namespace Skogsaas.Legion
                     pair.Value.Invoke(this, evt);
                 }
             }
+        }
+
+        #endregion
+
+        #region Enumerator
+
+        public IEnumerator<IObject> GetEnumerator()
+        {
+            return this.objects.Values.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
         }
 
         #endregion

@@ -49,5 +49,13 @@ namespace LegionTest
             i.Alias = "Hello World!";
             Assert.AreEqual("Hello World!", i.Alias);
         }
+
+        [TestMethod]
+        public void TestId()
+        {
+            TestObject i = FactoryTest.channel.CreateType<TestObject>("123ABC");
+            
+            Assert.AreEqual("123ABC", i.Id);
+        }
     }
 }

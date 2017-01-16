@@ -14,7 +14,10 @@ namespace Skogsaas.Legion
 
         protected void ListenSubstructureChanged(INotifyPropertyChanged property, string name)
         {
-            property.PropertyChanged += (object caller, PropertyChangedEventArgs args) => { NotifyPropertyChanged(name); };
+            if(property != null)
+            {
+                property.PropertyChanged += (object caller, PropertyChangedEventArgs args) => { NotifyPropertyChanged(name); };
+            }
         }
     }
 }
