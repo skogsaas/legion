@@ -1,8 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using Skogsaas.Legion;
-using Skogsaas.Legion.Connectivity.Serializer.Json;
-using Skogsaas.Legion.Connectivity.Transport.Udp;
 using System.Net;
 using Skogsaas.Legion.RestJson;
 

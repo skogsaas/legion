@@ -7,7 +7,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Runner</RootNamespace>
     <AssemblyName>Runner</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -45,21 +45,9 @@
     <Compile Include="TestStruct.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Legion.Connectivity.Serializer.Json\Legion.Connectivity.Serializer.Json.csproj">
-      <Project>{a5c7a413-874e-4f2e-8268-e777fb4e371c}</Project>
-      <Name>Legion.Connectivity.Serializer.Json</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Legion.Connectivity.Transport.Udp\Legion.Connectivity.Transport.Udp.csproj">
-      <Project>{508b425e-362d-4ca9-a4c3-e0b5b696c4ce}</Project>
-      <Name>Legion.Connectivity.Transport.Udp</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Legion.RestJson\Legion.RestJson.csproj">
       <Project>{b17a48d6-4f10-430c-ab12-1da7d0137e2a}</Project>
       <Name>Legion.RestJson</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Legion.Streaming\Legion.Connectivity.csproj">
-      <Project>{5dcddbec-39d6-47fe-9ff3-cb6eb5c05159}</Project>
-      <Name>Legion.Connectivity</Name>
     </ProjectReference>
     <ProjectReference Include="..\Legion\Legion.csproj">
       <Project>{CCB29155-CE7F-4774-8A57-87308E3A0962}</Project>

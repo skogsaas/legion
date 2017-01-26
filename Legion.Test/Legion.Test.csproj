@@ -6,9 +6,9 @@
     <ProjectGuid>{4488BBA9-B4B6-462C-8CD5-6290DDE61B7E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LegionTest</RootNamespace>
-    <AssemblyName>LegionTest</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <RootNamespace>Skogsaas.Legion.Test</RootNamespace>
+    <AssemblyName>Skogsaas.Legion.Test</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -53,6 +53,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CollectionObject.cs" />
     <Compile Include="FactoryTest.cs" />
     <Compile Include="ParentObject.cs" />
     <Compile Include="TestObject.cs" />

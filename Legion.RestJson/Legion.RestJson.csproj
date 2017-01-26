@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Skogsaas.Legion.RestJson</RootNamespace>
     <AssemblyName>Skogsaas.Legion.RestJson</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -72,6 +72,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Legion.Json\Legion.Json.csproj">
+      <Project>{a88c9177-5f6c-48a9-8e5e-21d62abbb865}</Project>
+      <Name>Legion.Json</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Legion\Legion.csproj">
       <Project>{ccb29155-ce7f-4774-8a57-87308e3a0962}</Project>
       <Name>Legion</Name>

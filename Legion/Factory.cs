@@ -159,6 +159,17 @@ namespace Skogsaas.Legion
 
         private void generateProperty(PropertyInfo property, TypeBuilder typeBuilder, Type baseType)
         {
+            if(property.PropertyType.IsGenericType)
+            {
+                foreach(Type t in property.PropertyType.GetGenericArguments())
+                {
+                    if(typeof(IStruct).IsAssignableFrom(t))
+                    {
+                        RegisterType(t);
+                    }
+                }
+            }
+
             FieldBuilder fieldBuilder = typeBuilder.DefineField(
                     "_" + property.Name,
                     property.PropertyType,

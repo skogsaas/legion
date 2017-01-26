@@ -57,5 +57,12 @@ namespace LegionTest
             
             Assert.AreEqual("123ABC", i.Id);
         }
+
+        [TestMethod]
+        public void TestCollection()
+        {
+            CollectionObject i = FactoryTest.channel.CreateType<CollectionObject>();
+
+        }
     }
 }
