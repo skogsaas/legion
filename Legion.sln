@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Legion.Test", "Legion.Test\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Legion.Json.Test", "Legion.Json.Test\Legion.Json.Test.csproj", "{FA11A673-84FF-40D3-8345-C2CDBDA51C80}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Legion.Mqtt", "Legion.Mqtt\Legion.Mqtt.csproj", "{B3786D68-7BDB-4866-A00C-3517A405ACED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,10 @@ Global
 		{FA11A673-84FF-40D3-8345-C2CDBDA51C80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA11A673-84FF-40D3-8345-C2CDBDA51C80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA11A673-84FF-40D3-8345-C2CDBDA51C80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3786D68-7BDB-4866-A00C-3517A405ACED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3786D68-7BDB-4866-A00C-3517A405ACED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3786D68-7BDB-4866-A00C-3517A405ACED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3786D68-7BDB-4866-A00C-3517A405ACED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
