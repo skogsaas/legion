@@ -97,7 +97,7 @@ namespace Skogsaas.Legion
 
         public void SubscribeObjectPublish(Type type, Channel.ObjectHandler handler)
         {
-            if(this.objPub.ContainsKey(type))
+            if(!this.objPub.ContainsKey(type))
             {
                 this.objPub[type] = new List<Channel.ObjectHandler>();
             }
@@ -107,7 +107,7 @@ namespace Skogsaas.Legion
 
         public void SubscribeObjectUnpublish(Type type, Channel.ObjectHandler handler)
         {
-            if (this.objUnPub.ContainsKey(type))
+            if (!this.objUnPub.ContainsKey(type))
             {
                 this.objUnPub[type] = new List<Channel.ObjectHandler>();
             }
