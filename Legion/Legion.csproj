@@ -43,7 +43,7 @@
     <Compile Include="StructBase.cs" />
     <Compile Include="ObjectBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utilities\MultiDictionary.cs" />
+    <Compile Include="SubscriptionContainer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

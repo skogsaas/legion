@@ -8,15 +8,7 @@ namespace Skogsaas.Legion
     {
         private Dictionary<string, IObject> objects;
 
-        #region Subscriptions
-
-        private Utilities.MultiDictionary<Type, ObjectHandler> objectPublish;
-        private Utilities.MultiDictionary<Type, ObjectHandler> objectUnpublish;
-        private Utilities.MultiDictionary<string, ObjectHandler> objectPublishId;
-        private Utilities.MultiDictionary<string, ObjectHandler> objectUnpublishId;
-        private Utilities.MultiDictionary<Type, EventHandler> eventPublish;
-
-        #endregion
+        private SubscriptionContainer subscriptions;
 
         public string Name { get; private set; }
 
@@ -30,19 +22,15 @@ namespace Skogsaas.Legion
 
         internal Channel(string name)
         {
+            this.Name = name;
+
+            this.objects = new Dictionary<string, IObject>();
+            this.subscriptions = new SubscriptionContainer();
+
             this.Factory = new Factory();
 
             // Forward events from factory.
             this.Factory.OnTypeRegistered += (Type type, Type generated) => { this.OnTypeRegistered?.Invoke(type, generated); };
-
-            this.objects = new Dictionary<string, IObject>();
-            this.objectPublish = new Utilities.MultiDictionary<Type, ObjectHandler>();
-            this.objectUnpublish = new Utilities.MultiDictionary<Type, ObjectHandler>();
-            this.objectPublishId = new Utilities.MultiDictionary<string, ObjectHandler>();
-            this.objectUnpublishId = new Utilities.MultiDictionary<string, ObjectHandler>();
-            this.eventPublish = new Utilities.MultiDictionary<Type, EventHandler>();
-
-            this.Name = name;
         }
 
         public void RegisterType(Type type)
@@ -162,118 +150,109 @@ namespace Skogsaas.Legion
 
         public void SubscribePublish(Type type, ObjectHandler handler)
         {
-            this.objectPublish.Add(type, handler);
+            this.subscriptions.SubscribeObjectPublish(type, handler);
 
-            foreach (KeyValuePair<string, IObject> pair in this.objects)
+            List<IObject> objs = FindOfType(type);
+
+            foreach (IObject obj in objs)
             {
-                if (type.IsAssignableFrom(pair.Value.GetType()))
-                {
-                    handler.Invoke(this, pair.Value);
-                }
+                handler.Invoke(this, obj);
             }
         }
 
         public void SubscribePublish(Type type, EventHandler handler)
         {
-            this.eventPublish.Add(type, handler);
+            this.subscriptions.SubscribeEventPublish(type, handler);
         }
 
         public void SubscribeUnpublish(Type type, ObjectHandler handler)
         {
-            this.objectUnpublish.Add(type, handler);
+            this.subscriptions.SubscribeObjectUnpublish(type, handler);
         }
 
         public void SubscribePublishId(string id, ObjectHandler handler)
         {
-            this.objectPublishId.Add(id, handler);
+            this.subscriptions.SubscribeObjectIdPublish(id, handler);
 
-            foreach (KeyValuePair<string, IObject> pair in this.objects)
+            if(this.objects.ContainsKey(id))
             {
-                if (pair.Key == id)
-                {
-                    handler.Invoke(this, pair.Value);
-                }
+                handler.Invoke(this, this.objects[id]);
             }
         }
 
         public void SubscribeUnpublishId(string id, ObjectHandler handler)
         {
-            this.objectPublishId.Add(id, handler);
+            this.subscriptions.SubscribeObjectIdUnpublish(id, handler);
         }
 
         public void UnsubscribePublish(Type type, ObjectHandler handler)
         {
-            this.objectPublish.Remove(type, handler);
+            this.subscriptions.UnsubscribeObjectPublish(type, handler);
         }
 
         public void UnsubscribePublish(Type type, EventHandler handler)
         {
-            this.eventPublish.Remove(type, handler);
+            this.subscriptions.UnsubscribeEventPublish(type, handler);
         }
 
         public void UnsubscribeUnpublish(Type type, ObjectHandler handler)
         {
-            this.objectUnpublish.Remove(type, handler);
+            this.subscriptions.UnsubscribeObjectUnpublish(type, handler);
         }
 
         public void UnsubscribePublishId(string id, ObjectHandler handler)
         {
-            this.objectPublishId.Remove(id, handler);
+            this.subscriptions.UnsubscribeObjectIdPublish(id, handler);
         }
 
         public void UnsubscribeUnpublishId(string id, ObjectHandler handler)
         {
-            this.objectPublishId.Remove(id, handler);
+            this.subscriptions.UnsubscribeObjectIdUnpublish(id, handler);
         }
 
         #region Private triggers
 
         private void triggerObjectPublished(IObject obj)
         {
-            if(this.objectPublishId.ContainsKey(obj.Id))
+            IList<ObjectHandler> idHandlers = this.subscriptions.GetObjectIdPublish(obj.Id);
+
+            foreach (ObjectHandler handler in idHandlers)
             {
-                foreach(ObjectHandler handler in this.objectPublishId[obj.Id])
-                {
-                    handler.Invoke(this, obj);
-                }
+                handler.Invoke(this, obj);
             }
 
-            foreach (KeyValuePair<Type, ObjectHandler> pair in this.objectPublish)
+            IList<ObjectHandler> typeHandlers = this.subscriptions.GetObjectTypePublish(obj.GetType());
+
+            foreach(ObjectHandler handler in typeHandlers)
             {
-                if (pair.Key.IsAssignableFrom(obj.GetType()))
-                {
-                    pair.Value.Invoke(this, obj);
-                }
+                handler.Invoke(this, obj);
             }
         }
 
         private void triggerObjectUnpublished(IObject obj)
         {
-            if (this.objectUnpublishId.ContainsKey(obj.Id))
+            IList<ObjectHandler> idHandlers = this.subscriptions.GetObjectIdUnpublish(obj.Id);
+
+            foreach (ObjectHandler handler in idHandlers)
             {
-                foreach (ObjectHandler handler in this.objectUnpublishId[obj.Id])
-                {
-                    handler.Invoke(this, obj);
-                }
+                handler.Invoke(this, obj);
             }
 
-            foreach (KeyValuePair<Type, ObjectHandler> pair in this.objectUnpublish)
+            IList<ObjectHandler> typeHandlers = this.subscriptions.GetObjectTypeUnpublish(obj.GetType());
+
+            foreach (ObjectHandler handler in typeHandlers)
             {
-                if (pair.Key.IsAssignableFrom(obj.GetType()))
-                {
-                    pair.Value.Invoke(this, obj);
-                }
+                handler.Invoke(this, obj);
             }
         }
 
         private void triggerEventPublished(IEvent evt)
         {
-            foreach (KeyValuePair<Type, EventHandler> pair in this.eventPublish)
+            IList<EventHandler> typeHandlers = this.subscriptions.GetEventTypePublish(evt.GetType());
+
+            foreach (EventHandler handler in typeHandlers)
             {
-                if (pair.Key.IsAssignableFrom(evt.GetType()))
-                {
-                    pair.Value.Invoke(this, evt);
-                }
+                handler.Invoke(this, evt);
             }
         }
 
