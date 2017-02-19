@@ -8,5 +8,6 @@ namespace Skogsaas.Legion
 {
     public interface IEvent : IId
     {
+        Type GetInterface();
     }
 }

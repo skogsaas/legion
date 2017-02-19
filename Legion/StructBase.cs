@@ -5,6 +5,8 @@ namespace Skogsaas.Legion
 {
     public class StructBase : IStruct
     {
+        protected Type iface;
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void NotifyPropertyChanged(string property)
@@ -18,6 +20,11 @@ namespace Skogsaas.Legion
             {
                 property.PropertyChanged += (object caller, PropertyChangedEventArgs args) => { NotifyPropertyChanged(name); };
             }
+        }
+
+        public Type GetInterface()
+        {
+            return iface;
         }
     }
 }

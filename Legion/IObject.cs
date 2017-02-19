@@ -6,7 +6,6 @@ namespace Skogsaas.Legion
     public interface IObject : IId, INotifyPropertyChanged
     {
         string Owner { get; set; }
-
         bool IsPublished();
     }
 }

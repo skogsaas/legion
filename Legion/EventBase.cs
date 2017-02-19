@@ -8,6 +8,7 @@ namespace Skogsaas.Legion
 {
     public class EventBase : IEvent
     {
+        protected Type iface;
         public string Id { get; set; }
 
         public EventBase()
@@ -18,6 +19,11 @@ namespace Skogsaas.Legion
         public EventBase(string id)
         {
             this.Id = id;
+        }
+
+        public virtual Type GetInterface()
+        {
+            return iface;
         }
     }
 }

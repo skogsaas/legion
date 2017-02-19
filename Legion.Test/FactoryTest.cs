@@ -62,7 +62,14 @@ namespace LegionTest
         public void TestCollection()
         {
             CollectionObject i = FactoryTest.channel.CreateType<CollectionObject>();
+        }
 
+        [TestMethod]
+        public void TestGetInterface()
+        {
+            TestObject i = FactoryTest.channel.CreateType<TestObject>();
+
+            Assert.AreEqual(typeof(TestObject), i.GetInterface());
         }
     }
 }

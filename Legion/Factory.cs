@@ -107,11 +107,11 @@ namespace Skogsaas.Legion
                 new Type[] { type } // Interfaces
                 );
 
-            generateConstructorNoParam(parent, typeBuilder);
+            generateConstructorNoParam(type, parent, typeBuilder);
 
             if(baseType != typeof(IStruct))
             {
-                generateConstructorIdParam(parent, typeBuilder);
+                generateConstructorIdParam(type, parent, typeBuilder);
             }
 
             PropertyInfo[] properties = type.GetProperties();
@@ -124,7 +124,7 @@ namespace Skogsaas.Legion
             return typeBuilder.CreateType();
         }
 
-        private void generateConstructorNoParam(Type parent, TypeBuilder typeBuilder)
+        private void generateConstructorNoParam(Type type, Type parent, TypeBuilder typeBuilder)
         {
             ConstructorInfo baseConstructor = parent.GetConstructor(new Type[] { });
             ConstructorBuilder constructorBuilder = typeBuilder.DefineConstructor(
@@ -133,14 +133,19 @@ namespace Skogsaas.Legion
                 null
                 );
 
+            FieldInfo fieldIface = parent.GetField("iface", BindingFlags.Instance | BindingFlags.NonPublic);
+
             // Generate code to call base constructor passing string
             ILGenerator ctorIL = constructorBuilder.GetILGenerator();
             ctorIL.Emit(OpCodes.Ldarg_0);
             ctorIL.Emit(OpCodes.Call, baseConstructor);
+            ctorIL.Emit(OpCodes.Ldarg_0);
+            ctorIL.Emit(OpCodes.Ldtoken, type);
+            ctorIL.Emit(OpCodes.Stfld, fieldIface);
             ctorIL.Emit(OpCodes.Ret);
         }
 
-        private void generateConstructorIdParam(Type parent, TypeBuilder typeBuilder)
+        private void generateConstructorIdParam(Type type, Type parent, TypeBuilder typeBuilder)
         {
             ConstructorInfo baseConstructor = parent.GetConstructor(new Type[] { typeof(string) });
             ConstructorBuilder constructorBuilder = typeBuilder.DefineConstructor(
@@ -149,11 +154,16 @@ namespace Skogsaas.Legion
                 new Type[] { typeof(string) }
                 );
 
+            FieldInfo fieldIface = parent.GetField("iface", BindingFlags.Instance | BindingFlags.NonPublic);
+
             // Generate code to call base constructor passing string
             ILGenerator ctorIL = constructorBuilder.GetILGenerator();
             ctorIL.Emit(OpCodes.Ldarg_0);
             ctorIL.Emit(OpCodes.Ldarg_1);
             ctorIL.Emit(OpCodes.Call, baseConstructor);
+            ctorIL.Emit(OpCodes.Ldarg_0);
+            ctorIL.Emit(OpCodes.Ldtoken, type);
+            ctorIL.Emit(OpCodes.Stfld, fieldIface);
             ctorIL.Emit(OpCodes.Ret);
         }
 
